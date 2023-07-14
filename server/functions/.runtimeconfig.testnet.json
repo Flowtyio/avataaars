@@ -1,0 +1,6 @@
+{
+  "flow": {
+    "contract_address": "0xd1caadce6bc851ab",
+    "flow_endpoint": "https://rest-testnet.onflow.org"
+  }
+}

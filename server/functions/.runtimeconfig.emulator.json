@@ -1,0 +1,6 @@
+{
+  "flow": {
+    "contract_address": "0xf8d6e0586b0a20c7",
+    "flow_endpoint": "http://127.0.0.1:8888"
+  }
+}

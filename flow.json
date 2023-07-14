@@ -1,0 +1,115 @@
+{
+	"contracts": {
+		"Avataaars": "./contracts/Avataaars.cdc",
+		"Components": "./contracts/Components.cdc",
+		"NonFungibleToken": {
+			"source": "./modules/flow-nft/contracts/NonFungibleToken.cdc",
+			"aliases": {
+				"emulator": "0xf8d6e0586b0a20c7",
+				"testnet": "0x631e88ae7f1d7c20",
+				"mainnet": "0x1d7e57aa55817448"
+			}
+		},
+		"MetadataViews": {
+			"source": "./modules/flow-nft/contracts/MetadataViews.cdc",
+			"aliases": {
+				"emulator": "0xf8d6e0586b0a20c7",
+				"testnet": "0x631e88ae7f1d7c20",
+				"mainnet": "0x1d7e57aa55817448"
+			}
+		},
+		"ViewResolver": {
+			"source": "./modules/flow-nft/contracts/ViewResolver.cdc",
+			"aliases": {
+				"emulator": "0xf8d6e0586b0a20c7",
+				"testnet": "0x631e88ae7f1d7c20",
+				"mainnet": "0x1d7e57aa55817448"
+			}
+		},
+		"FungibleToken": {
+			"source": "./modules/flow-nft/contracts/utility/FungibleToken.cdc",
+			"aliases": {
+				"emulator": "0xee82856bf20e2aa6",
+				"testnet": "0x9a0766d93b6608b7",
+				"mainnet": "0xf233dcee88fe0abe"
+			}
+		}
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"key": "6d12eebfef9866c9b6fa92b97c6e705c26a1785b1e7944da701fc545a51d4673"
+		},
+		"emulator-ft": {
+			"address": "ee82856bf20e2aa6",
+			"key": "686779d775e5fcbf8d2f4a85cb4c53525d02b7ef53230d180fc16f35d9b7d025"
+		},
+		"testnet": {
+			"address": "0xfcd1f9be4cc5e47b",
+			"key": {
+				"type": "google-kms",
+				"index": 0,
+				"signatureAlgorithm": "ECDSA_P256",
+				"hashAlgorithm": "SHA2_256",
+				"resourceID": "projects/flowty-test/locations/global/keyRings/flow/cryptoKeys/avataaars/cryptoKeyVersions/1"
+			  }
+		},
+		"mainnet": {
+			"address": "0xc934ed0c0f4788bc",
+			"key": {
+				"type": "google-kms",
+				"index": 0,
+				"signatureAlgorithm": "ECDSA_P256",
+				"hashAlgorithm": "SHA2_256",
+				"resourceID": "projects/flowty-prod/locations/global/keyRings/flow/cryptoKeys/avataaars/cryptoKeyVersions/1"
+			  }
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"emulator-account": [
+				"Avataaars",
+				"Components",
+				"NonFungibleToken",
+				"MetadataViews",
+				"ViewResolver"
+			],
+			"emulator-ft": [
+				"FungibleToken"
+			]
+		},
+		"testnet": {
+			"testnet": [
+				"Components",
+				{
+					"name": "Avataaars",
+					"args": [
+						{
+						  "type": "String",
+						  "value": "https://us-central1-avataaars-test.cloudfunctions.net/avataaar?id="
+						}
+					  ]
+				}
+			]
+		},
+		"mainnet": {
+			"mainnet": [
+				"Components",
+				{
+					"name": "Avataaars",
+					"args": [
+						{
+						  "type": "String",
+						  "value": "https://us-central1-avataaars-prod.cloudfunctions.net/avataaar?id="
+						}
+					  ]
+				}
+			]
+		}
+	}
+}

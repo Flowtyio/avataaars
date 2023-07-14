@@ -1,0 +1,3 @@
+[submodule "modules/flow-nft"]
+	path = modules/flow-nft
+	url = https://github.com/Flowtyio/flow-nft.git
