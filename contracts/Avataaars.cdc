@@ -336,7 +336,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
                         externalURL: MetadataViews.ExternalURL("https://flowty.io/"),
                         squareImage: MetadataViews.Media(
                             file: MetadataViews.HTTPFile(
-                                url: "https://storage.googleapis.com/flowty-images/flowty-logo.jpeg"
+                                url: self.imageBaseURL.concat("1")
                             ),
                             mediaType: "image/jpeg"
                         ),
