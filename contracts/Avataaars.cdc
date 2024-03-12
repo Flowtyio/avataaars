@@ -25,41 +25,41 @@ import "FungibleToken"
 
 import "Components"
 
-pub contract Avataaars: NonFungibleToken, ViewResolver {
+access(all) contract Avataaars: NonFungibleToken, ViewResolver {
 
     /// Total supply of Avataaarss in existence
-    pub var totalSupply: UInt64
+    access(all) var totalSupply: UInt64
 
-    pub var imageBaseURL: String
+    access(all) var imageBaseURL: String
 
     /// The event that is emitted when the contract is created
-    pub event ContractInitialized()
+    access(all) event ContractInitialized()
 
     /// The event that is emitted when an NFT is withdrawn from a Collection
-    pub event Withdraw(id: UInt64, from: Address?)
+    access(all) event Withdraw(id: UInt64, from: Address?)
 
     /// The event that is emitted when an NFT is deposited to a Collection
-    pub event Deposit(id: UInt64, to: Address?)
+    access(all) event Deposit(id: UInt64, to: Address?)
 
     /// Storage and Public Paths
-    pub let CollectionStoragePath: StoragePath
-    pub let CollectionPublicPath: PublicPath
-    pub let CollectionProviderPath: PrivatePath
-    pub let MinterStoragePath: StoragePath
+    access(all) let CollectionStoragePath: StoragePath
+    access(all) let CollectionPublicPath: PublicPath
+    access(all) let CollectionProviderPath: PrivatePath
+    access(all) let MinterStoragePath: StoragePath
 
     // We only have a public path for minting to let Avataaars be like a facuet.
-    pub let MinterPublicPath: PublicPath
+    access(all) let MinterPublicPath: PublicPath
 
     /// The core resource that represents a Non Fungible Token. 
     /// New instances will be created using the NFTMinter resource
     /// and stored in the Collection resource
     ///
-    pub resource NFT: NonFungibleToken.INFT, MetadataViews.Resolver {
+    access(all) resource NFT: NonFungibleToken.INFT, ViewResolver.Resolver {
         
         /// The unique ID that each NFT has
-        pub let id: UInt64
-        pub let renderer: Components.Renderer
-        pub let data: {String: AnyStruct} // any extra data like a name or mint time
+        access(all) let id: UInt64
+        access(all) let renderer: Components.Renderer
+        access(all) let data: {String: AnyStruct} // any extra data like a name or mint time
     
         init(
             id: UInt64,
@@ -72,7 +72,14 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
             // we save the pre-rendered svg for now so that we can vend this svg to third parties.
             // in the future, when there is an implementation of MetadataViews.File
             let rendered = self.renderer.build()
-            Avataaars.account.save(rendered, to: StoragePath(identifier: "Avataaars_".concat(id.toString()))!)
+            Avataaars.account.storage.save(rendered, to: StoragePath(identifier: "Avataaars_".concat(id.toString()))!)
+        }
+
+        /// createEmptyCollection creates an empty Collection
+        /// and returns it to the caller so that they can own NFTs
+        /// @{NonFungibleToken.Collection}
+        access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
+            return <-Avataaars.createEmptyCollection(nftType: Type<@Avataaars.NFT>())
         }
 
         /// Function that returns all the Metadata Views implemented by a Non Fungible Token
@@ -80,7 +87,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @return An array of Types defining the implemented views. This value will be used by
         ///         developers to know which parameter to pass to the resolveView() method.
         ///
-        pub fun getViews(): [Type] {
+        access(all) view fun getViews(): [Type] {
             return [
                 Type<MetadataViews.Display>(),
                 Type<MetadataViews.Royalties>(),
@@ -98,7 +105,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @param view: The Type of the desired view.
         /// @return A structure representing the requested view.
         ///
-        pub fun resolveView(_ view: Type): AnyStruct? {
+        access(all) fun resolveView(_ view: Type): AnyStruct? {
             switch view {
                 case Type<MetadataViews.Display>():
                     return MetadataViews.Display(
@@ -125,7 +132,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
                     // eventually the FungibleTokenSwitchboard might be an option
                     // https://github.com/onflow/flow-ft/blob/master/contracts/FungibleTokenSwitchboard.cdc
                     let cut = MetadataViews.Royalty(
-                        receiver: Avataaars.account.getCapability<&{FungibleToken.Receiver}>(/public/somePath),
+                        receiver: Avataaars.account.capabilities.get<&{FungibleToken.Receiver}>(/public/flowTokenVault)!,
                         cut: 0.025, // 2.5% royalty
                         description: "Creator Royalty"
                     )
@@ -150,11 +157,11 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
 
     /// Defines the methods that are particular to this NFT contract collection
     ///
-    pub resource interface AvataaarsCollectionPublic {
-        pub fun deposit(token: @NonFungibleToken.NFT)
-        pub fun getIDs(): [UInt64]
-        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
-        pub fun borrowAvataaars(id: UInt64): &Avataaars.NFT? {
+    access(all) resource interface AvataaarsCollectionPublic {
+        access(all) fun deposit(token: @{NonFungibleToken.NFT})
+        access(all) view fun getIDs(): [UInt64]
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}
+        access(all) view fun borrowAvataaars(id: UInt64): &Avataaars.NFT? {
             post {
                 (result == nil) || (result?.id == id):
                     "Cannot borrow Avataaars reference: the ID of the returned reference is incorrect"
@@ -166,13 +173,30 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
     /// In order to be able to manage NFTs any account will need to create
     /// an empty collection first
     ///
-    pub resource Collection: AvataaarsCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MetadataViews.ResolverCollection {
+    access(all) resource Collection: NonFungibleToken.Collection{
         // dictionary of NFT conforming tokens
         // NFT is a resource type with an `UInt64` ID field
-        pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
+        access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
 
         init () {
             self.ownedNFTs <- {}
+        }
+
+        /// getSupportedNFTTypes returns a list of NFT types that this receiver accepts
+        access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
+            let supportedTypes: {Type: Bool} = {}
+            supportedTypes[Type<@Avataaars.NFT>()] = true
+            return supportedTypes
+        }
+
+        /// Returns whether or not the given type is accepted by the collection
+        /// A collection that can accept any type should just return true by default
+        access(all) view fun isSupportedNFTType(type: Type): Bool {
+           if type == Type<@Avataaars.NFT>() {
+            return true
+           } else {
+            return false
+           }
         }
 
         /// Removes an NFT from the collection and moves it to the caller
@@ -180,7 +204,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @param withdrawID: The ID of the NFT that wants to be withdrawn
         /// @return The NFT resource that has been taken out of the collection
         ///
-        pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
+        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner ) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing NFT")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
@@ -192,7 +216,7 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         ///
         /// @param token: The NFT resource to be included in the collection
         /// 
-        pub fun deposit(token: @NonFungibleToken.NFT) {
+        access(all) fun deposit(token: @{NonFungibleToken.NFT}) {
             let token <- token as! @Avataaars.NFT
 
             let id: UInt64 = token.id
@@ -209,8 +233,13 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         ///
         /// @return An array containing the IDs of the NFTs in the collection
         ///
-        pub fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
+        }
+
+        /// Gets the amount of NFTs stored in the collection
+        access(all) view fun getLength(): Int {
+            return self.ownedNFTs.keys.length
         }
 
         /// Gets a reference to an NFT in the collection so that 
@@ -219,8 +248,8 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @param id: The ID of the wanted NFT
         /// @return A reference to the wanted NFT resource
         ///
-        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
-            return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT} {
+            return (&self.ownedNFTs[id])!
         }
  
         /// Gets a reference to an NFT in the collection so that 
@@ -229,10 +258,10 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @param id: The ID of the wanted NFT
         /// @return A reference to the wanted NFT resource
         ///        
-        pub fun borrowAvataaars(id: UInt64): &Avataaars.NFT? {
+        access(all) view fun borrowAvataaars(id: UInt64): &Avataaars.NFT? {
             if self.ownedNFTs[id] != nil {
                 // Create an authorized reference to allow downcasting
-                let ref = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+                let ref = (&self.ownedNFTs[id] as &{NonFungibleToken.NFT}?)!
                 return ref as! &Avataaars.NFT
             }
 
@@ -246,68 +275,38 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         /// @param id: The ID of the wanted NFT
         /// @return The resource reference conforming to the Resolver interface
         /// 
-        pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
-            let nft = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+        access(all) view fun borrowViewResolver(id: UInt64): &{ViewResolver.Resolver} {
+            let nft = (&self.ownedNFTs[id] as &{NonFungibleToken.NFT}?)!
             return nft as! &Avataaars.NFT
         }
 
-        destroy() {
-            destroy self.ownedNFTs
+        /// createEmptyCollection creates an empty Collection of the same type
+        /// and returns it to the caller
+        /// @return A an empty collection of the same type
+        access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
+            return <-Avataaars.createEmptyCollection(nftType: Type<@Avataaars.NFT>())
         }
+
     }
 
     /// Allows anyone to create a new empty collection
     ///
     /// @return The new Collection resource
     ///
-    pub fun createEmptyCollection(): @NonFungibleToken.Collection {
+    access(all) fun createEmptyCollection(nftType: Type): @{NonFungibleToken.Collection} {
         return <- create Collection()
     }
 
-    pub resource interface MinterPublic {
-        pub fun mintNFT(
-            recipient: &Avataaars.Collection
-        )
-    }
-
-    /// Resource that an admin or something similar would own to be
-    /// able to mint new NFTs
+    /// Function that returns all the Metadata Views implemented by a Non Fungible Token
     ///
-    pub resource NFTMinter: MinterPublic {
-        /// Mints a new NFT with a new ID and deposit it in the
-        /// recipients collection using their collection reference
-        ///
-        /// @param recipient: A capability to the collection where the new NFT will be deposited
-        ///
-        pub fun mintNFT(
-            recipient: &Avataaars.Collection
-        ) {
-            // we want IDs to start at 1, so we'll increment first
-            Avataaars.totalSupply = Avataaars.totalSupply + 1
-
-            let admin = Avataaars.account.borrow<&Components.Admin>(from: Components.AdminPath)!
-            let renderer = admin.createRandom()
-
-            // create a new NFT
-            var newNFT <- create NFT(
-                id: Avataaars.totalSupply,
-                renderer: renderer
-            )
-
-            // deposit it in the recipient's account using their reference
-            recipient.deposit(token: <-newNFT)
-
-        }
-    }
-
-    pub struct Part {
-        pub let name: String
-        pub let content: String
-
-        init(_ n: String, _ c: String) {
-            self.name = n
-            self.content = c
-        }
+    /// @return An array of Types defining the implemented views. This value will be used by
+    ///         developers to know which parameter to pass to the resolveView() method.
+    ///
+    access(all) view fun getContractViews(resourceType: Type?): [Type] {
+        return [
+            Type<MetadataViews.NFTCollectionData>(),
+            Type<MetadataViews.NFTCollectionDisplay>()
+        ]
     }
 
     /// Function that resolves a metadata view for this contract.
@@ -315,21 +314,19 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
     /// @param view: The Type of the desired view.
     /// @return A structure representing the requested view.
     ///
-    pub fun resolveView(_ view: Type): AnyStruct? {
-        switch view {
+    access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+        switch viewType {
             case Type<MetadataViews.NFTCollectionData>():
                 return MetadataViews.NFTCollectionData(
                     storagePath: Avataaars.CollectionStoragePath,
                     publicPath: Avataaars.CollectionPublicPath,
-                    providerPath: Avataaars.CollectionProviderPath,
-                    publicCollection: Type<&Avataaars.Collection{Avataaars.AvataaarsCollectionPublic}>(),
-                    publicLinkedType: Type<&Avataaars.Collection{Avataaars.AvataaarsCollectionPublic,NonFungibleToken.CollectionPublic,NonFungibleToken.Receiver,MetadataViews.ResolverCollection}>(),
-                    providerLinkedType: Type<&Avataaars.Collection{Avataaars.AvataaarsCollectionPublic,NonFungibleToken.CollectionPublic,NonFungibleToken.Provider,MetadataViews.ResolverCollection}>(),
-                    createEmptyCollectionFunction: (fun (): @NonFungibleToken.Collection {
-                        return <-Avataaars.createEmptyCollection()
+                    publicCollection: Type<&{Avataaars.AvataaarsCollectionPublic}>(),
+                    publicLinkedType: Type<&{Avataaars.AvataaarsCollectionPublic}>(),
+                    createEmptyCollectionFunction: (fun (): @{NonFungibleToken.Collection} {
+                        return <-Avataaars.createEmptyCollection(nftType: Type<@Avataaars.NFT>())
                     })
                 )
-            case Type<MetadataViews.NFTCollectionDisplay>():
+           case Type<MetadataViews.NFTCollectionDisplay>():
                 return MetadataViews.NFTCollectionDisplay(
                         name: "Flowty Avataaars",
                         description: "This collection is used showcase the various things you can do with metadata standards on Flowty",
@@ -354,20 +351,81 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
         return nil
     }
 
+    access(all) resource interface MinterPublic {
+        access(all) fun mintNFT(
+            recipient: &Avataaars.Collection
+        )
+    }
+
+    /// Resource that an admin or something similar would own to be
+    /// able to mint new NFTs
+    ///
+    access(all) resource NFTMinter: MinterPublic {
+        /// Mints a new NFT with a new ID and deposit it in the
+        /// recipients collection using their collection reference
+        ///
+        /// @param recipient: A capability to the collection where the new NFT will be deposited
+        ///
+        access(all) fun mintNFT(
+            recipient: &Avataaars.Collection
+        ) {
+            // we want IDs to start at 1, so we'll increment first
+            Avataaars.totalSupply = Avataaars.totalSupply + 1
+
+            let admin = Avataaars.account.storage.borrow<&Components.Admin>(from: Components.AdminPath)!
+            let renderer = admin.createRandom()
+
+            // create a new NFT
+            var newNFT <- create NFT(
+                id: Avataaars.totalSupply,
+                renderer: renderer
+            )
+
+            // deposit it in the recipient's account using their reference
+            recipient.deposit(token: <-newNFT)
+
+        }
+    }
+
+    access(all) struct Part {
+        access(all) let name: String
+        access(all) let content: String
+
+        init(_ n: String, _ c: String) {
+            self.name = n
+            self.content = c
+        }
+    }
+
+    /// Function that resolves a metadata view for this contract.
+    ///
+    /// @param view: The Type of the desired view.
+    /// @return A structure representing the requested view.
+    ///
+    access(all) fun resolveView(_ view: Type): AnyStruct? {
+        switch view {
+            case Type<MetadataViews.NFTCollectionData>():
+                return Avataaars.resolveContractView(resourceType: Type<@Avataaars.NFT>(), viewType: Type<MetadataViews.NFTCollectionData>())
+            case Type<MetadataViews.NFTCollectionDisplay>():
+                return Avataaars.resolveContractView(resourceType: Type<@Avataaars.NFT>(), viewType: Type<MetadataViews.NFTCollectionDisplay>())
+        }
+        return nil
+    }
+
     /// Function that returns all the Metadata Views implemented by a Non Fungible Token
     ///
     /// @return An array of Types defining the implemented views. This value will be used by
     ///         developers to know which parameter to pass to the resolveView() method.
     ///
-    pub fun getViews(): [Type] {
+    access(all) fun getViews(): [Type] {
         return [
             Type<MetadataViews.NFTCollectionData>(),
             Type<MetadataViews.NFTCollectionDisplay>()
         ]
     }
 
-    pub fun borrowMinter(): &{MinterPublic} {
-        return self.account.borrow<&{MinterPublic}>(from: self.MinterStoragePath)!
+    access(all) fun borrowMinter(): &{MinterPublic} {
+        return self.account.capabilities.borrow<&{MinterPublic}>(self.MinterPublicPath)!
     }
 
     init(imageBaseURL: String) {
@@ -386,18 +444,18 @@ pub contract Avataaars: NonFungibleToken, ViewResolver {
 
         // Create a Collection resource and save it to storage
         let collection <- create Collection()
-        self.account.save(<-collection, to: self.CollectionStoragePath)
+        self.account.storage.save(<-collection, to: self.CollectionStoragePath)
 
         // create a public capability for the collection
-        self.account.link<&Avataaars.Collection{NonFungibleToken.CollectionPublic, Avataaars.AvataaarsCollectionPublic, MetadataViews.ResolverCollection}>(
-            self.CollectionPublicPath,
-            target: self.CollectionStoragePath
-        )
+        let cap = self.account.capabilities.storage.issue<&{Avataaars.AvataaarsCollectionPublic}>(self.CollectionStoragePath)
+        self.account.capabilities.publish(cap, at: self.CollectionPublicPath)
 
         // Create a Minter resource and save it to storage
         let minter <- create NFTMinter()
-        self.account.save(<-minter, to: self.MinterStoragePath)
-        self.account.link<&{MinterPublic}>(self.MinterPublicPath, target: self.MinterStoragePath)
+        self.account.storage.save(<-minter, to: self.MinterStoragePath)
+
+        let mintCap = self.account.capabilities.storage.issue<&{MinterPublic}>(self.MinterStoragePath)
+        self.account.capabilities.publish(mintCap, at: self.MinterPublicPath)
 
         emit ContractInitialized()
     }

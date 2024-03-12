@@ -73,14 +73,16 @@
 	"deployments": {
 		"emulator": {
 			"emulator-account": [
-				"Avataaars",
-				"Components",
-				"NonFungibleToken",
-				"MetadataViews",
-				"ViewResolver"
-			],
-			"emulator-ft": [
-				"FungibleToken"
+				{
+					"name": "Avataaars",
+					"args": [
+						{
+						  "type": "String",
+						  "value": "https://us-central1-avataaars-test.cloudfunctions.net/avataaar?id="
+						}
+					  ]
+				},
+				"Components"
 			]
 		},
 		"testnet": {
