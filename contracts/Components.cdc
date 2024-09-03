@@ -1,15 +1,17 @@
-pub contract Components {
+access(all) contract Components {
 
-    pub let AdminPath: StoragePath
+    access(all) let AdminPath: StoragePath
 
-    pub struct Colors {
-        pub let accessories: String
-        pub let clothing: String
-        pub let hair: String
-        pub let hat: String
-        pub let facialHair: String
-        pub let background: String
-        pub let skin: String
+    access(all) entitlement Owner
+
+    access(all) struct Colors {
+        access(all) let accessories: String
+        access(all) let clothing: String
+        access(all) let hair: String
+        access(all) let hat: String
+        access(all) let facialHair: String
+        access(all) let background: String
+        access(all) let skin: String
 
         init(_ accessories: String, _ clothing: String, _ hair: String, _ hat: String, _ facialHair: String, _ bg: String, _ skin: String) {
             self.accessories = accessories
@@ -22,16 +24,16 @@ pub contract Components {
         }
     }
 
-    pub struct interface Component {
-        pub let name: String
-        pub fun build(components: {String: {Component}}, colors: Colors): String
+    access(all) struct interface Component {
+        access(all) let name: String
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String
     }
 
-    pub struct Accessories: Component {
-        pub let name: String
+    access(all) struct Accessories: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "accessories_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "accessories_".concat(self.name))!)
                 ?? panic("accessory not found")
             switch self.name {
                 case "eyepatch":
@@ -46,11 +48,11 @@ pub contract Components {
         }
     }
 
-    pub struct Clothing: Component {
-        pub let name: String
+    access(all) struct Clothing: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "clothing_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "clothing_".concat(self.name))!)
                 ?? panic("clothing not found")
             switch self.name {
                 case "graphicShirt":
@@ -69,11 +71,11 @@ pub contract Components {
         }
     }
 
-    pub struct ClothingGraphic: Component {
-        pub let name: String
+    access(all) struct ClothingGraphic: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "clothingGraphic_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "clothingGraphic_".concat(self.name))!)
                 ?? panic("clothing not found")
             return content[0]
         }
@@ -83,11 +85,11 @@ pub contract Components {
         }
     }
 
-    pub struct Eyebrows: Component {
-        pub let name: String
+    access(all) struct Eyebrows: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "eyebrows_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "eyebrows_".concat(self.name))!)
                 ?? panic("eyebrows not found")
             return content[0]
         }
@@ -97,11 +99,11 @@ pub contract Components {
         }
     }
 
-    pub struct Eyes: Component {
-        pub let name: String
+    access(all) struct Eyes: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "eyes_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "eyes_".concat(self.name))!)
                 ?? panic("eyes not found")
             return content[0]
         }
@@ -111,11 +113,11 @@ pub contract Components {
         }
     }
 
-    pub struct FacialHair: Component {
-        pub let name: String
+    access(all) struct FacialHair: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "facialHair_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "facialHair_".concat(self.name))!)
                 ?? panic("facialHair not found")
             return content[0].concat(colors.facialHair).concat(content[1])
         }
@@ -125,11 +127,11 @@ pub contract Components {
         }
     }
 
-    pub struct Mouth: Component {
-        pub let name: String
+    access(all) struct Mouth: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "mouth_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "mouth_".concat(self.name))!)
                 ?? panic("mouth not found")
             return content[0]
         }
@@ -139,11 +141,11 @@ pub contract Components {
         }
     }
 
-    pub struct Nose: Component {
-        pub let name: String
+    access(all) struct Nose: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "nose_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "nose_".concat(self.name))!)
                 ?? panic("nose not found")
             return content[0]
         }
@@ -153,11 +155,11 @@ pub contract Components {
         }
     }
 
-    pub struct Style: Component {
-        pub let name: String
+    access(all) struct Style: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "style_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "style_".concat(self.name))!)
                 ?? panic("style not found")
             let base = components["base"]!.build(components: components, colors: colors)
             switch self.name {
@@ -175,11 +177,11 @@ pub contract Components {
         }
     }
 
-    pub struct Top: Component {
-        pub let name: String
+    access(all) struct Top: Component {
+        access(all) let name: String
 
-        pub fun build(components: {String: {Component}}, colors: Colors): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "top_".concat(self.name))!)
+        access(all) fun build(components: {String: {Component}}, colors: Colors): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "top_".concat(self.name))!)
                 ?? panic("top not found")
             
             switch self.name {
@@ -207,16 +209,16 @@ pub contract Components {
         }
     }
 
-    pub struct Renderer {
-        pub let components: {String: {Component}}
-        pub let colors: Colors
-        pub let flattened: {String: String}
+    access(all) struct Renderer {
+        access(all) let components: {String: {Component}}
+        access(all) let colors: Colors
+        access(all) let flattened: {String: String}
 
-        pub fun build(): String {
-            let content = Components.account.borrow<&[String]>(from: StoragePath(identifier: "base_".concat("default"))!)
+        access(all) fun build(): String {
+            let content = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "base_".concat("default"))!)
                 ?? panic("base not found")
             
-            let document = Components.account.borrow<&[String]>(from: StoragePath(identifier: "document_default")!)
+            let document = Components.account.storage.borrow<&[String]>(from: StoragePath(identifier: "document_default")!)
                 ?? panic("document not found")
 
             let tmp = content[0]
@@ -259,17 +261,17 @@ pub contract Components {
         }
     }
 
-    pub resource Admin {
-        pub let options: {String: {String: Bool}}
-        pub let colors: {String: Bool}
+    access(all) resource Admin {
+        access(self) let options: {String: {String: Bool}}
+        access(self) let colors: {String: Bool}
 
-        pub fun createRandom(): Renderer {
+        access(Owner) fun createRandom(): Renderer {
             let c: [String] = []
             var count = 0
             while count < 7 {
                 count = count + 1
 
-                c.append(self.colors.keys[unsafeRandom() % UInt64(self.colors.keys.length)])
+                c.append(self.colors.keys[revertibleRandom<UInt64>(modulo: UInt64(self.colors.keys.length))])
             }
 
             let colors = Colors(c[0], c[1], c[2], c[3], c[4], c[5], c[6])
@@ -291,14 +293,14 @@ pub contract Components {
             return Renderer(components: components, colors: colors)
         }
 
-        pub fun rollOption(segment: String): String {
+        access(all) fun rollOption(segment: String): String {
             let keys = self.options[segment]!.keys
-            return keys[unsafeRandom() % UInt64(keys.length)]
+            return keys[revertibleRandom<UInt64>(modulo: UInt64(keys.length))]
         }
 
-        pub fun registerContent(component: String, name: String, content: [String]) {
+        access(Owner) fun registerContent(component: String, name: String, content: [String]) {
             let storagePath = StoragePath(identifier: component.concat("_").concat(name))!
-            Components.account.save(content, to: storagePath)
+            Components.account.storage.save(content, to: storagePath)
 
             if self.options[component] == nil {
                 self.options[component] = {
@@ -311,11 +313,11 @@ pub contract Components {
             }
         }
 
-        pub fun addColor(_ c: String) {
+        access(Owner) fun addColor(_ c: String) {
             self.colors.insert(key: c, true)
         }
 
-        pub fun removeColor(_ c: String) {
+        access(Owner) fun removeColor(_ c: String) {
             self.colors.remove(key: c)
         }
 
@@ -361,6 +363,6 @@ pub contract Components {
             }
 
         
-        self.account.save(<- admin, to: self.AdminPath)
+        self.account.storage.save(<- admin, to: self.AdminPath)
     }
 }
