@@ -1,0 +1,17 @@
+{
+  "name": "avataaars",
+  "version": "1.0.0",
+  "description": "Welcome! This repo serves as a complete example for how to build a smart contract fully compliant with NFT-standards. This repo brings Avataaars, an open-source avatar generator, to the blockchain, randomly generating avatars for users and storing them as NFTs. It makes full use of  [Metadata Standards](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc) needed for NFTs to be compatible with the Flowty marketplace and suite of products. Enjoy!",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@flowtyio/flow-contracts": "^0.1.0-beta.32"
+  }
+}
